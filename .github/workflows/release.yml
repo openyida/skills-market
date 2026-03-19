@@ -1,0 +1,46 @@
+name: Release Skills
+
+on:
+  release:
+    types: [created]
+
+jobs:
+  build-and-upload:
+    name: Build and Upload Release Assets
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create all skills package
+        run: |
+          echo "📦 Creating all-skills package..."
+          mkdir -p dist
+          
+          # Create individual skill packages
+          for skill_dir in skills/*/; do
+            if [ -d "$skill_dir" ]; then
+              skill_name=$(basename "$skill_dir")
+              echo "Packaging: $skill_name"
+              cd skills
+              zip -r "../dist/${skill_name}.zip" "$skill_name"
+              cd ..
+            fi
+          done
+          
+          # Create all-skills.zip
+          cd skills
+          zip -r ../dist/all-skills.zip .
+          cd ..
+          
+          echo ""
+          echo "Created packages:"
+          ls -la dist/
+
+      - name: Upload Release Assets
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/*.zip
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

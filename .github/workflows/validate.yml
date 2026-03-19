@@ -1,0 +1,126 @@
+name: Validate Skills
+
+on:
+  push:
+    branches: [ main, master ]
+    paths:
+      - 'skills/**'
+  pull_request:
+    branches: [ main, master ]
+    paths:
+      - 'skills/**'
+
+jobs:
+  validate:
+    name: Validate Skill Structure
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Validate Skills
+        run: |
+          echo "🔍 Validating skills..."
+          
+          # 检查每个 skill 目录
+          for skill_dir in skills/*/; do
+            if [ -d "$skill_dir" ]; then
+              skill_name=$(basename "$skill_dir")
+              echo ""
+              echo "Checking skill: $skill_name"
+              
+              # 检查 SKILL.md 是否存在
+              if [ ! -f "${skill_dir}SKILL.md" ]; then
+                echo "❌ Error: SKILL.md not found in $skill_dir"
+                exit 1
+              fi
+              echo "  ✅ SKILL.md exists"
+              
+              # 检查 SKILL.md 格式
+              if ! grep -q "^name:" "${skill_dir}SKILL.md"; then
+                echo "❌ Error: 'name' field not found in ${skill_dir}SKILL.md"
+                exit 1
+              fi
+              echo "  ✅ name field exists"
+              
+              if ! grep -q "^description:" "${skill_dir}SKILL.md"; then
+                echo "❌ Error: 'description' field not found in ${skill_dir}SKILL.md"
+                exit 1
+              fi
+              echo "  ✅ description field exists"
+              
+              # 检查文件夹命名规范（小写字母、数字、连字符）
+              if [[ ! "$skill_name" =~ ^[a-z0-9-]+$ ]]; then
+                echo "❌ Error: Skill folder name '$skill_name' should only contain lowercase letters, numbers, and hyphens"
+                exit 1
+              fi
+              echo "  ✅ folder name is valid"
+            fi
+          done
+          
+          echo ""
+          echo "✅ All skills validated successfully!"
+
+  lint:
+    name: Lint Markdown Files
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install markdownlint
+        run: npm install -g markdownlint-cli
+
+      - name: Lint markdown files
+        run: |
+          echo "📝 Linting markdown files..."
+          markdownlint README.md CONTRIBUTING.md skills/*/SKILL.md skills/*/README.md || true
+          echo "Markdown lint complete"
+
+  build-skill-package:
+    name: Build Skill Packages
+    runs-on: ubuntu-latest
+    needs: [validate]
+    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create skill packages
+        run: |
+          echo "📦 Creating skill packages..."
+          mkdir -p dist
+          
+          for skill_dir in skills/*/; do
+            if [ -d "$skill_dir" ]; then
+              skill_name=$(basename "$skill_dir")
+              echo "Packaging: $skill_name"
+              cd "$skill_dir/.."
+              zip -r "../../dist/${skill_name}.zip" "$skill_name"
+              cd - > /dev/null
+            fi
+          done
+          
+          echo ""
+          echo "Created packages:"
+          ls -la dist/
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: skill-packages
+          path: dist/*.zip
+          retention-days: 30
