@@ -42,15 +42,17 @@ jobs:
               fi
               echo "  ✅ SKILL.md exists"
               
-              # 检查 SKILL.md 格式
-              if ! grep -q "^name:" "${skill_dir}SKILL.md"; then
-                echo "❌ Error: 'name' field not found in ${skill_dir}SKILL.md"
+              # 提取 frontmatter 区域（两个 --- 之间的内容）进行校验，避免误匹配正文
+              frontmatter=$(awk '/^---/{count++; next} count==1' "${skill_dir}SKILL.md")
+              
+              if ! echo "$frontmatter" | grep -q "^name:"; then
+                echo "❌ Error: 'name' field not found in frontmatter of ${skill_dir}SKILL.md"
                 exit 1
               fi
               echo "  ✅ name field exists"
               
-              if ! grep -q "^description:" "${skill_dir}SKILL.md"; then
-                echo "❌ Error: 'description' field not found in ${skill_dir}SKILL.md"
+              if ! echo "$frontmatter" | grep -q "^description:"; then
+                echo "❌ Error: 'description' field not found in frontmatter of ${skill_dir}SKILL.md"
                 exit 1
               fi
               echo "  ✅ description field exists"
@@ -86,7 +88,7 @@ jobs:
       - name: Lint markdown files
         run: |
           echo "📝 Linting markdown files..."
-          markdownlint README.md CONTRIBUTING.md skills/*/SKILL.md skills/*/README.md || true
+          markdownlint README.md CONTRIBUTING.md skills/*/SKILL.md skills/*/README.md
           echo "Markdown lint complete"
 
   build-skill-package:
@@ -108,9 +110,9 @@ jobs:
             if [ -d "$skill_dir" ]; then
               skill_name=$(basename "$skill_dir")
               echo "Packaging: $skill_name"
-              cd "$skill_dir/.."
-              zip -r "../../dist/${skill_name}.zip" "$skill_name"
-              cd - > /dev/null
+              cd skills
+              zip -r "../dist/${skill_name}.zip" "$skill_name"
+              cd ..
             fi
           done
           

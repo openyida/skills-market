@@ -39,6 +39,7 @@
    name: your-skill-name
    description: 简短描述你的 Skill 功能（建议不超过 100 字符）
    author: your-name (可选)
+   version: 1.0.0 (可选)
    tags: tag1, tag2, tag3 (可选)
    ---
    
