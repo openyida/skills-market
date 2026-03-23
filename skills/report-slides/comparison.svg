@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 720" font-family="'SF Pro Display', 'PingFang SC', -apple-system, sans-serif">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0a0a0f"/>
+      <stop offset="100%" style="stop-color:#12121a"/>
+    </linearGradient>
+    <linearGradient id="leftAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="100%" style="stop-color:#818cf8"/>
+    </linearGradient>
+    <linearGradient id="rightAccent" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#f59e0b"/>
+      <stop offset="100%" style="stop-color:#fbbf24"/>
+    </linearGradient>
+    <linearGradient id="arrowGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" style="stop-color:#6366f1"/>
+      <stop offset="50%" style="stop-color:#a78bfa"/>
+      <stop offset="100%" style="stop-color:#f59e0b"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="960" height="720" fill="url(#bgGrad)"/>
+  <!-- Subtle grid -->
+  <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.02)" stroke-width="0.5"/>
+  </pattern>
+  <rect width="960" height="720" fill="url(#grid)"/>
+
+  <!-- Title -->
+  <text x="480" y="48" text-anchor="middle" fill="#e5e5e5" font-size="22" font-weight="700" letter-spacing="0.02em">report-slides vs frontend-slides</text>
+  <text x="480" y="72" text-anchor="middle" fill="#888" font-size="12" letter-spacing="0.1em">FEATURE COMPARISON</text>
+
+  <!-- Divider line -->
+  <line x1="480" y1="92" x2="480" y2="640" stroke="rgba(255,255,255,0.06)" stroke-width="1" stroke-dasharray="4,4"/>
+
+  <!-- Left header: frontend-slides -->
+  <rect x="60" y="88" width="380" height="36" rx="8" fill="rgba(99,102,241,0.1)" stroke="rgba(99,102,241,0.3)" stroke-width="1"/>
+  <circle cx="80" cy="106" r="6" fill="url(#leftAccent)"/>
+  <text x="96" y="112" fill="#818cf8" font-size="14" font-weight="600">frontend-slides</text>
+  <text x="280" y="112" fill="#666" font-size="11">通用演示 · 英文优先</text>
+
+  <!-- Right header: report-slides -->
+  <rect x="520" y="88" width="380" height="36" rx="8" fill="rgba(245,158,11,0.1)" stroke="rgba(245,158,11,0.3)" stroke-width="1"/>
+  <circle cx="540" cy="106" r="6" fill="url(#rightAccent)"/>
+  <text x="556" y="112" fill="#fbbf24" font-size="14" font-weight="600">report-slides</text>
+  <text x="740" y="112" fill="#666" font-size="11">中文汇报 · 企业级</text>
+
+  <!-- Row 1: 风格 -->
+  <text x="60" y="158" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">风格体系</text>
+  <text x="60" y="178" fill="#ccc" font-size="13" font-weight="500">12 种创意风格</text>
+  <text x="60" y="196" fill="#777" font-size="11">Bold Signal · Neon Cyber · Paper &amp; Ink …</text>
+  <text x="520" y="158" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">风格体系</text>
+  <text x="520" y="178" fill="#fbbf24" font-size="13" font-weight="600">11 种企业级 UI 设计语言</text>
+  <text x="520" y="196" fill="#777" font-size="11">Apple · Fluent · Carbon · Ant Design · Salesforce …</text>
+
+  <!-- Row 2: 架构 -->
+  <text x="60" y="232" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">输出架构</text>
+  <text x="60" y="252" fill="#ccc" font-size="13" font-weight="500">单个 HTML 文件</text>
+  <text x="60" y="270" fill="#777" font-size="11">零依赖，自包含，双击即开</text>
+  <text x="520" y="232" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">输出架构</text>
+  <text x="520" y="252" fill="#fbbf24" font-size="13" font-weight="600">单文件 + MVC 多文件画廊</text>
+  <text x="520" y="270" fill="#777" font-size="11">数据/渲染/主题分离，改文案只动数据层</text>
+
+  <!-- Row 3: 版式 -->
+  <text x="60" y="306" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">版式系统</text>
+  <text x="60" y="326" fill="#ccc" font-size="13" font-weight="500">6 种通用版式</text>
+  <text x="60" y="344" fill="#777" font-size="11">标题 · 内容 · 网格 · 代码 · 引用 · 图片</text>
+  <text x="520" y="306" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">版式系统</text>
+  <text x="520" y="326" fill="#fbbf24" font-size="13" font-weight="600">15 种汇报专用版式</text>
+  <text x="520" y="344" fill="#777" font-size="11">数据看板 · 双栏流程 · 金字塔 · 问题卡片 · 指标分组 …</text>
+
+  <!-- Row 4: 智能高亮 -->
+  <text x="60" y="380" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">智能高亮</text>
+  <text x="60" y="400" fill="#ccc" font-size="13" font-weight="500">—</text>
+  <text x="60" y="418" fill="#777" font-size="11">无内置高亮能力</text>
+  <text x="520" y="380" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">智能高亮</text>
+  <text x="520" y="400" fill="#fbbf24" font-size="13" font-weight="600">自动双重高亮</text>
+  <text x="520" y="418" fill="#777" font-size="11">数字+单位 → .hl-num ｜ 名词实体 → .hl-entity</text>
+
+  <!-- Row 5: 中文支持 -->
+  <text x="60" y="454" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">中文支持</text>
+  <text x="60" y="474" fill="#ccc" font-size="13" font-weight="500">依赖外部字体</text>
+  <text x="60" y="492" fill="#777" font-size="11">Google Fonts / Fontshare，无中文精简规范</text>
+  <text x="520" y="454" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">中文支持</text>
+  <text x="520" y="474" fill="#fbbf24" font-size="13" font-weight="600">钉钉进步体 CDN 内置</text>
+  <text x="520" y="492" fill="#777" font-size="11">中文精简手法 + 自检清单 + 符号替代连接词</text>
+
+  <!-- Row 6: 画廊 -->
+  <text x="60" y="528" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">风格画廊</text>
+  <text x="60" y="548" fill="#ccc" font-size="13" font-weight="500">—</text>
+  <text x="60" y="566" fill="#777" font-size="11">无画廊门户</text>
+  <text x="520" y="528" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">风格画廊</text>
+  <text x="520" y="548" fill="#fbbf24" font-size="13" font-weight="600">毛玻璃侧边栏 + iframe 预览</text>
+  <text x="520" y="566" fill="#777" font-size="11">↑↓ 切换 · F 全屏 · B 收起 · 11 风格一键对比</text>
+
+  <!-- Row 7: Markdown -->
+  <text x="60" y="602" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">内容解析</text>
+  <text x="60" y="622" fill="#ccc" font-size="13" font-weight="500">通用内容输入</text>
+  <text x="60" y="640" fill="#777" font-size="11">文本 · 大纲 · PPT 转换 · 图片评估</text>
+  <text x="520" y="602" fill="#555" font-size="10" letter-spacing="0.08em" font-weight="600">内容解析</text>
+  <text x="520" y="622" fill="#fbbf24" font-size="13" font-weight="600">专用 Markdown 解析规则</text>
+  <text x="520" y="640" fill="#777" font-size="11">加粗数字→关键指标 · 引用块→金句页 · 表格→数据看板</text>
+
+  <!-- Evolution arrow -->
+  <rect x="200" y="665" width="560" height="40" rx="20" fill="rgba(99,102,241,0.06)" stroke="rgba(99,102,241,0.15)" stroke-width="1"/>
+  <line x1="240" y1="685" x2="700" y2="685" stroke="url(#arrowGrad)" stroke-width="2" filter="url(#glow)"/>
+  <polygon points="700,680 712,685 700,690" fill="#f59e0b" filter="url(#glow)"/>
+  <text x="480" y="681" text-anchor="middle" fill="#a78bfa" font-size="10" font-weight="500" letter-spacing="0.05em">EVOLVED FROM</text>
+  <text x="480" y="697" text-anchor="middle" fill="#666" font-size="9">致敬 frontend-slides 的零依赖 · 视口适配 · 动画体系设计理念</text>
+</svg>
