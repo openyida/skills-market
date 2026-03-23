@@ -97,6 +97,15 @@ description: 简短描述你的 Skill 功能
 
 > 欢迎贡献你的 Skill，让这个列表更加丰富！
 
+## 👥 贡献者
+
+感谢所有为 Skills Market 做出贡献的开发者！
+
+<p align="left">
+  <a href="https://github.com/yipengmu" title="yipengmu - report-slides"><img src="https://avatars.githubusercontent.com/yipengmu?v=4&s=48" width="48" height="48" alt="yipengmu" style="border-radius:50%"/></a>
+  <a href="https://github.com/chengminchao-create" title="chengminchao-create - yida-form-detail"><img src="https://avatars.githubusercontent.com/chengminchao-create?v=4&s=48" width="48" height="48" alt="chengminchao-create" style="border-radius:50%"/></a>
+</p>
+
 ## 📜 开源协议
 
 本项目采用 MIT 协议开源，详见 [LICENSE](./LICENSE)。
