@@ -180,20 +180,27 @@ CSS 中字体名称为 `'DingTalk JinBuTi'`，回退链：`'PingFang SC', 'Micro
 
 ## Phase 3: 生成演示文稿
 
-### Step 3.1: 读取支撑文件
+### Step 3.1: 按需读取支撑文件
 
-生成前必须读取以下文件：
+根据生成模式按需读取文件，避免不必要的上下文占用：
 
+**所有模式必读（核心文件）：**
 - [STYLE_PRESETS.md](STYLE_PRESETS.md) — 选定风格的完整 CSS 变量、字体、配色
 - [viewport-base.css](viewport-base.css) — 必须完整内联到 HTML 中的视口适配 CSS
 - [html-template.md](html-template.md) — HTML 架构、JS 功能、代码质量标准
 - [animation-patterns.md](animation-patterns.md) — 动画参考
-- [slide-data-schema.md](slide-data-schema.md) — 结构化数据源的 JSON Schema 和 15 种版式类型定义
-- [slide-renderer-template.md](slide-renderer-template.md) — 渲染引擎模板代码（含 highlightText、15 种版式渲染方法、SlidePresentation 控制器）
+
+**单文件生成模式额外读取：**
+- [slide-data-schema.md](slide-data-schema.md) — 15 种版式类型定义（用于理解数据结构）
 - [slide-base-css.md](slide-base-css.md) — 共享基础样式（版式布局、高亮组件、卡片、badge 等）
 
 **多风格画廊模式额外读取：**
+- [slide-data-schema.md](slide-data-schema.md) — 结构化数据源的 JSON Schema
+- [slide-renderer-template.md](slide-renderer-template.md) — 渲染引擎模板代码（含 highlightText、15 种版式渲染方法、SlidePresentation 控制器）
+- [slide-base-css.md](slide-base-css.md) — 共享基础样式
 - [gallery-template.md](gallery-template.md) — 画廊门户 HTML 模板（毛玻璃侧边栏 + iframe 预览 + 键盘快捷键）
+
+> **优化说明**：单文件模式下无需读取 `slide-renderer-template.md`（739 行）和 `gallery-template.md`（605 行），可节省约 1300 行上下文。
 
 ### Step 3.2: 版式映射
 

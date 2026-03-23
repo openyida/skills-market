@@ -374,15 +374,17 @@ const SLIDE_DATA = [
 
 ## 颜色 Key 映射
 
-数据中的颜色 key 映射到 CSS 变量：
+数据中的颜色 key 映射到 CSS 变量。每种风格在 [STYLE_PRESETS.md](STYLE_PRESETS.md) 中定义了这些变量的具体色值：
 
-| Key | CSS 变量 | 用途 |
-|-----|----------|------|
-| `accent` | `var(--accent-primary)` | 主强调色 |
-| `secondary` / `magenta` | `var(--accent-secondary)` | 次强调色 |
-| `amber` | `var(--accent-amber)` | 琥珀色（商业/警告） |
-| `emerald` | `var(--accent-emerald)` | 翡翠色（生态/成功） |
-| `blue` | `var(--accent-blue)` | 蓝色（信息/策略） |
+| Key | CSS 变量 | 用途 | STYLE_PRESETS.md 中的定义位置 |
+|-----|----------|------|------|
+| `accent` | `var(--accent-primary)` | 主强调色 | 每个风格的 `--accent-primary` 或等效的主色变量 |
+| `secondary` / `magenta` | `var(--accent-secondary)` | 次强调色 | 每个风格的 `--accent-secondary` / `--accent-magenta` |
+| `amber` | `var(--accent-amber)` | 琥珀色（商业/警告） | 每个风格的 `--accent-amber` / `--accent-orange` |
+| `emerald` | `var(--accent-emerald)` | 翡翠色（生态/成功） | 每个风格的 `--accent-emerald` / `--accent-green` |
+| `blue` | `var(--accent-blue)` | 蓝色（信息/策略） | 每个风格的 `--accent-blue` |
+
+> **注意**：不同风格的变量命名可能略有差异（如 Apple 用 `--accent-green` 而非 `--accent-emerald`），渲染引擎中的 `getColorValue()` 方法会自动处理这些映射。具体色值请查阅 STYLE_PRESETS.md 中对应风格的 `:root` 定义。
 
 ---
 
