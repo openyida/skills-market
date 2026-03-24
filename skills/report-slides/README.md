@@ -13,6 +13,33 @@
 - **视口适配**：所有内容严格适配 100vh，响应式 `clamp()` 缩放，永不滚动
 - **Markdown 解析**：支持从 Markdown 文件自动映射到幻灯片结构
 
+## 📦 安装
+
+### 自动安装（推荐）
+
+对 AI Agent 说：
+
+```
+帮我安装 report-slides skill，来源：https://github.com/openyida/skills-market/tree/main/skills/report-slides
+```
+
+### 手动安装
+
+```bash
+# 克隆仓库
+git clone https://github.com/openyida/skills-market.git /tmp/skills-market
+
+# Claude 用户
+cp -r /tmp/skills-market/skills/report-slides ~/.claude/skills/
+
+# Aone Copilot 用户
+cp -r /tmp/skills-market/skills/report-slides ~/.aone_copilot/skills/
+```
+
+安装完成后重启 Agent 即可使用。
+
+---
+
 ## 🖼️ 功能对比
 
 report-slides 与 frontend-slides 的定位差异一览：

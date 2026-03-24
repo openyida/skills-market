@@ -88,6 +88,38 @@ tags: presentation, slides, report, html, design, multi-style
 
 ---
 
+## 安装
+
+### 自动安装（推荐）
+
+对 AI Agent 说：
+
+```
+帮我安装 report-slides skill，来源：https://github.com/openyida/skills-market/tree/main/skills/report-slides
+```
+
+Agent 会自动执行以下步骤：
+1. 从 GitHub 下载 `report-slides` 文件夹中的所有文件
+2. 将文件夹复制到 `~/.claude/skills/report-slides/`（Claude）或 `~/.aone_copilot/skills/report-slides/`（Aone Copilot）
+3. 安装完成后即可使用
+
+### 手动安装
+
+```bash
+# 克隆仓库
+git clone https://github.com/openyida/skills-market.git /tmp/skills-market
+
+# 复制到 Claude skills 目录
+cp -r /tmp/skills-market/skills/report-slides ~/.claude/skills/
+
+# 或复制到 Aone Copilot skills 目录
+cp -r /tmp/skills-market/skills/report-slides ~/.aone_copilot/skills/
+```
+
+安装完成后，重启 Agent 或刷新 skills 列表即可使用。
+
+---
+
 ## 核心原则
 
 1. **零依赖** — 单个 HTML 文件，CSS/JS 全部内联，无需 npm 或构建工具
