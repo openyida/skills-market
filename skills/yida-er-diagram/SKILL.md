@@ -163,7 +163,50 @@ var GRAPH_DATA = {
 |-------------|------|---------|
 | `association` | 关联表单字段（AssociationFormField） | 实线蓝色 |
 | `data-source` | 关联其他表单数据（dataSourceType=relate） | 虚线蓝色 |
-| `linkage` | 数据联动 | 点线橙色 |
+| `linkage` | 数据联动（聚合表 relationForms / dataSourceLinkage / linkage） | 点线橙色 |
+
+### 三类关联关系的真实 Schema 字段路径（基于实测数据）
+
+> ⚠️ 以下路径均来自真实 Schema 接口返回，不得推测，修改提取逻辑前必须对照此表。
+
+**1. 关联表单（`association`）**
+
+```
+componentName === 'AssociationFormField'
+props.associationForm.formUuid  →  目标表单 UUID
+```
+
+**2. 关联其他表单数据（`data-source`）**
+
+```
+props.dataSourceType === 'relate'
+props.defaultDataSource.formula  →  字符串，格式：@{{FORM-xxx/fieldId}}
+                                    用正则 /@\{\{(FORM-[A-Z0-9]+)\// 提取 FORM-xxx
+```
+
+注意事项（来自实测）：
+- `formula` 必须是字符串才处理（`typeof formula === 'string'`），部分组件（如 `MultiSelectField`）的 `formula` 可能是对象，不能直接调用 `.match()`
+- `MultiSelectField` 的 `dataSourceType` 是 `'linkage'`（不是 `'relate'`），不会命中此分支
+
+**3. 数据联动（`linkage`）**
+
+新版结构（`dataSourceLinkage`）：
+```
+props.dataSourceLinkage.data.formId  →  目标表单 UUID
+```
+
+旧版结构（`linkage`）：
+```
+props.linkage.relateFormUuid  →  目标表单 UUID
+```
+
+聚合表（`virtualView`）通过专属接口获取，不走 V5 Schema：
+```
+接口：/{appType}/query/virtualview/get.json?formUuid=...
+content.relationForms[].formUuid  →  目标表单 UUID（relationType = 'linkage'）
+content.aggregatedFields[].name.zh_CN  →  维度字段名
+content.formulaFields[].name.zh_CN  →  指标列名（componentName 用 'NumberField'）
+```
 
 ---
 
@@ -275,16 +318,29 @@ window.X6.Graph.registerNode('er-rect', {
 
 ## 数据采集流程（为新应用生成 ER 图时必须执行）
 
+> ⚠️ **每次绘制 ER 图前，必须先清除旧缓存，再重新采集数据**。ER 图页面会展示绘制时间，如果使用旧缓存数据发布，绘制时间将失去意义，无法反映应用的真实当前状态。
+>
+> ```bash
+> # 每次绘制前必须执行，清除旧的采集缓存
+> rm -f .cache/new-er-graph-data.json
+> ```
+
 > ⚠️ **必须使用 openyida 内部的 `httpGet` 工具发请求**，它会自动携带 Cookie。直接用 `https.request` 会因为 Cookie 格式问题导致 401。
 
 ### 完整采集脚本
 
 脚本已独立存放在 [`scripts/fetch-forms.js`](scripts/fetch-forms.js)。
 
-使用前修改脚本顶部的 `appType`，然后在项目根目录执行：
+在项目根目录执行，将 appType 作为命令行参数传入：
 
 ```bash
-node skills/yida-er-diagram/scripts/fetch-forms.js
+node skills/yida-er-diagram/scripts/fetch-forms.js <appType>
+```
+
+示例：
+
+```bash
+node skills/yida-er-diagram/scripts/fetch-forms.js APP_O7104UDII29RRRIKYBIO
 ```
 
 输出到 `.cache/new-er-graph-data.json`。
@@ -350,8 +406,8 @@ node skills/yida-er-diagram/scripts/update-er-diagram.js APP_HTZ06OGDO4XKFP3LL55
 
 ## AI 使用决策规则
 
-1. **用户要求为某个应用生成 ER 图** → 按「数据采集流程」Step 1-5 执行，不要跳过任何步骤
-2. **更新已有 ER 图** → 只更新 `GRAPH_DATA` 和 `window.__erAppType__`，其余代码不动
+1. **用户要求为某个应用生成 ER 图** → 必须先执行 `rm -f .cache/new-er-graph-data.json` 清除旧缓存，再按「数据采集流程」Step 1-5 执行，不要跳过任何步骤。**禁止使用旧缓存数据直接发布**，否则 ER 图上的绘制时间将失去意义。
+2. **更新已有 ER 图** → 同样必须先清除缓存、重新采集，再发布。只更新 `GRAPH_DATA` 和 `window.__erAppType__`，其余代码不动
 3. **节点文字不显示** → 检查是否使用了 HTML 覆盖层方案，SVG text / foreignObject 在宜搭环境均不可用
 4. **导出没反应** → 检查是否使用纯 Canvas 绘制方案，不要用 html2canvas 或 x6Graph.exportPNG
 5. **节点拖动后边不跟随** → 检查 `capturedNodeModel.setPosition()` 是否在 `onMouseMove` 中同步调用

@@ -3,17 +3,22 @@
  * 宜搭 ER 图数据采集脚本
  *
  * 用法：
- *   1. 修改下方 appType 为目标应用的 appType
- *   2. 执行：node skills/yida-er-diagram/scripts/fetch-forms.js
- *   3. 输出到 .cache/new-er-graph-data.json
+ *   node skills/yida-er-diagram/scripts/fetch-forms.js <appType>
+ *   例：node skills/yida-er-diagram/scripts/fetch-forms.js APP_O7104UDII29RRRIKYBIO
+ *
+ * 输出到 .cache/new-er-graph-data.json
  */
 
 const { httpGet } = require('/usr/local/lib/node_modules/openyida/lib/core/utils');
 const fs = require('fs');
 const path = require('path');
 
-// ← 修改为目标应用的 appType
-const appType = 'APP_PLMDYVRQKUCTICZK3N5P';
+// 从命令行参数读取 appType，不再硬编码
+const appType = process.argv[2];
+if (!appType) {
+  console.error('❌ 请传入 appType 参数，例：node fetch-forms.js APP_O7104UDII29RRRIKYBIO');
+  process.exit(1);
+}
 
 const cache = JSON.parse(fs.readFileSync('.cache/cookies.json', 'utf8'));
 
@@ -66,7 +71,36 @@ function extractFromV5Schema(formUuid, componentsTree) {
           });
         }
 
-        // 数据联动
+        // 关联其他表单数据：dataSourceType === 'relate'
+        // 目标表单 UUID 在 defaultDataSource.formula 里（必须是字符串才处理）
+        // 真实格式（来自 schema 实测）：@{{FORM-xxx/fieldId}}
+        if (props.dataSourceType === 'relate' && props.defaultDataSource) {
+          const formula = props.defaultDataSource.formula;
+          if (typeof formula === 'string' && formula) {
+            const matchRelate = formula.match(/@\{\{(FORM-[A-Z0-9]+)\//);
+            if (matchRelate && matchRelate[1]) {
+              edges.push({
+                sourceFormUuid: formUuid,
+                targetFormUuid: matchRelate[1],
+                fieldLabel: getName(props.label) || '',
+                relationType: 'data-source',
+              });
+            }
+          }
+        }
+
+        // 数据联动（字段的选项列表由另一个字段的值动态过滤）：
+        // props.dataSourceLinkage.data.formId 是被联动的数据来源表单
+        if (props.dataSourceLinkage && props.dataSourceLinkage.data && props.dataSourceLinkage.data.formId) {
+          edges.push({
+            sourceFormUuid: formUuid,
+            targetFormUuid: props.dataSourceLinkage.data.formId,
+            fieldLabel: getName(props.label) || '',
+            relationType: 'linkage',
+          });
+        }
+
+        // 数据联动（旧版 linkage 结构）
         if (props.linkage && props.linkage.relateFormUuid) {
           edges.push({
             sourceFormUuid: formUuid,
@@ -105,10 +139,14 @@ async function main() {
   }
 
   // 响应结构：listResult.content.formNavigationList[]
-  // 每项包含：relateFormUuid（表单ID）、title（i18n对象）、formType
+  // 每项包含：formUuid（真实表单UUID）、relateFormUuid（导航节点UUID，不可靠）、title（i18n对象）、formType
+  // 注意：必须用 f.formUuid，不能用 f.relateFormUuid！
+  // relateFormUuid 是导航菜单节点的 UUID，对于"管理页面"等列表页，它指向的是列表页自身而非表单。
+  // 同一个表单可能在导航里出现多次（如同时出现在"销售管理"和"回收站"分组），需要按 formUuid 去重。
+  const seenFormUuids = new Set();
   const forms = listResult.content.formNavigationList
-    .filter(f => f.relateFormUuid && ['receipt', 'process', 'virtualView'].includes(f.formType))
-    .map(f => ({ formUuid: f.relateFormUuid, name: getName(f.title), formType: f.formType }));
+    .filter(f => f.formUuid && ['receipt', 'process', 'virtualView'].includes(f.formType) && !seenFormUuids.has(f.formUuid) && seenFormUuids.add(f.formUuid))
+    .map(f => ({ formUuid: f.formUuid, name: getName(f.title), formType: f.formType }));
 
   console.log('表单数量:', forms.length);
   forms.forEach(f => console.log(' ', f.formType, f.formUuid, f.name));
@@ -128,19 +166,69 @@ async function main() {
   }
 
   for (const form of forms) {
-    const schemaPath = '/dingtalk/web/' + appType + '/query/formdesign/getFormSchema.json'
-      + '?formUuid=' + encodeURIComponent(form.formUuid) + '&schemaVersion=V5';
     await sleep(MIN_REQUEST_INTERVAL_MS);
-    const schemaResult = await httpGet(baseUrl, schemaPath, null, cache.cookies);
     let fields = [], edges = [];
 
-    if (schemaResult.success && schemaResult.content) {
-      const content = schemaResult.content;
-      // V5 schema 结构：content.pages[0].componentsTree（递归 children）
-      if (content.pages && content.pages[0] && content.pages[0].componentsTree) {
-        const extracted = extractFromV5Schema(form.formUuid, content.pages[0].componentsTree);
-        fields = extracted.fields;
-        edges = extracted.edges;
+    if (form.formType === 'virtualView') {
+      // 聚合表：通过专属接口 /{appType}/query/virtualview/get.json 获取关联表单
+      const virtualViewPath = '/' + appType + '/query/virtualview/get.json'
+        + '?_api=nattyFetch&_mock=false'
+        + '&_csrf_token=' + encodeURIComponent(csrfToken)
+        + '&formUuid=' + encodeURIComponent(form.formUuid)
+        + '&_stamp=' + Date.now();
+      const vvResult = await httpGet(baseUrl, virtualViewPath, null, cache.cookies);
+
+      if (vvResult.success && vvResult.content) {
+        const vvContent = vvResult.content;
+
+        // aggregatedFields[].name.zh_CN 是聚合表的维度字段列表
+        if (vvContent.aggregatedFields && vvContent.aggregatedFields.length) {
+          for (const aggField of vvContent.aggregatedFields) {
+            const fieldLabel = getName(aggField.name) || aggField.id || '';
+            if (fieldLabel) {
+              fields.push({ label: fieldLabel, componentName: aggField.componentName || 'TextField' });
+            }
+          }
+        }
+
+        // formulaFields[].name.zh_CN 是聚合表的指标列（计算字段）
+        if (vvContent.formulaFields && vvContent.formulaFields.length) {
+          for (const formulaField of vvContent.formulaFields) {
+            const fieldLabel = getName(formulaField.name) || formulaField.id || '';
+            if (fieldLabel) {
+              fields.push({ label: fieldLabel, componentName: 'NumberField' });
+            }
+          }
+        }
+
+        // relationForms[].formUuid 是聚合表关联的数据源表单，用 linkage 类型（橙色点线）
+        if (vvContent.relationForms) {
+          for (const relatedForm of vvContent.relationForms) {
+            if (relatedForm.formUuid) {
+              edges.push({
+                sourceFormUuid: form.formUuid,
+                targetFormUuid: relatedForm.formUuid,
+                fieldLabel: getName(relatedForm.title) || '',
+                relationType: 'linkage',
+              });
+            }
+          }
+        }
+      }
+    } else {
+      // 普通表单/流程表单：通过 V5 Schema 提取字段和关联关系
+      const schemaPath = '/dingtalk/web/' + appType + '/query/formdesign/getFormSchema.json'
+        + '?formUuid=' + encodeURIComponent(form.formUuid) + '&schemaVersion=V5';
+      const schemaResult = await httpGet(baseUrl, schemaPath, null, cache.cookies);
+
+      if (schemaResult.success && schemaResult.content) {
+        const content = schemaResult.content;
+        // V5 schema 结构：content.pages[0].componentsTree（递归 children）
+        if (content.pages && content.pages[0] && content.pages[0].componentsTree) {
+          const extracted = extractFromV5Schema(form.formUuid, content.pages[0].componentsTree);
+          fields = extracted.fields;
+          edges = extracted.edges;
+        }
       }
     }
 
